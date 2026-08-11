@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GymPlanner">
+  <meta name="theme-color" content="#3a72fb">
+  <title>GymPlanner</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css?v=3">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1 id="page-title">Knihovna cviků</h1>
+    </header>
+
+    <main id="main-content" class="main"></main>
+
+    <nav class="tab-bar">
+      <button class="tab active" data-tab="library">
+        <span class="tab-icon">🏋️</span>
+        <span>Knihovna</span>
+      </button>
+      <button class="tab" data-tab="workout">
+        <span class="tab-icon">💪</span>
+        <span>Trénink</span>
+      </button>
+      <button class="tab" data-tab="archive">
+        <span class="tab-icon">📦</span>
+        <span>Archiv</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay hidden"></div>
+  <div id="modal" class="modal hidden"></div>
+
+  <script src="js/storage.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
+</body>
+</html>
