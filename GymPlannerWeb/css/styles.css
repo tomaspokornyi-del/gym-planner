@@ -446,6 +446,63 @@ html, body {
   margin-bottom: 8px;
 }
 
+.sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.set-row {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.set-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.set-label strong {
+  font-size: 0.9rem;
+}
+
+.set-last {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.set-count-field {
+  max-width: 140px;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.archive-sets {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.archive-set-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.archive-set-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 @media (min-width: 768px) {
   #app {
     max-width: 480px;

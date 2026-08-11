@@ -1,4 +1,4 @@
-const CACHE = 'gymplanner-v1';
+const CACHE = 'gymplanner-v2';
 const ASSETS = [
   './',
   './index.html',

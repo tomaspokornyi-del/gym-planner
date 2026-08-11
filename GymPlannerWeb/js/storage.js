@@ -50,8 +50,26 @@ function getWorkouts(completed = null) {
   return workouts.filter((w) => w.isCompleted === completed);
 }
 
+function migrateWorkout(workout) {
+  if (!workout) return workout;
+  let changed = false;
+  workout.exercises = workout.exercises.map((entry) => {
+    const normalized = normalizeWorkoutEntry(entry);
+    if (entry !== normalized || entry.weight !== undefined || entry.reps !== undefined) {
+      changed = true;
+      delete normalized.weight;
+      delete normalized.reps;
+      return normalized;
+    }
+    return entry;
+  });
+  if (changed) saveWorkout(workout);
+  return workout;
+}
+
 function getWorkout(id) {
-  return getWorkouts().find((w) => w.id === id) || null;
+  const workout = getWorkouts().find((w) => w.id === id) || null;
+  return migrateWorkout(workout);
 }
 
 function saveWorkout(workout) {
@@ -71,6 +89,47 @@ function deleteWorkout(id) {
   saveData(data);
 }
 
+function normalizeWorkoutEntry(entry) {
+  if (entry.sets && Array.isArray(entry.sets) && entry.sets.length > 0) {
+    return entry;
+  }
+  return {
+    exerciseId: entry.exerciseId,
+    sets: [{ weight: entry.weight || 0, reps: entry.reps || 0 }]
+  };
+}
+
+function ensureSetCount(entry, count) {
+  const normalized = normalizeWorkoutEntry(entry);
+  const target = Math.max(1, Math.min(20, count));
+  while (normalized.sets.length < target) {
+    normalized.sets.push({ weight: 0, reps: 0 });
+  }
+  while (normalized.sets.length > target) {
+    normalized.sets.pop();
+  }
+  return normalized;
+}
+
+function createWorkoutEntry(exerciseId, setCount = 3) {
+  return ensureSetCount({ exerciseId, sets: [] }, setCount);
+}
+
+function getEntryBestSet(entry) {
+  const sets = normalizeWorkoutEntry(entry).sets;
+  return sets.reduce(
+    (best, set) => {
+      const weight = set.weight || 0;
+      const reps = set.reps || 0;
+      if (weight > best.weight || (weight === best.weight && reps > best.reps)) {
+        return { weight, reps };
+      }
+      return best;
+    },
+    { weight: 0, reps: 0 }
+  );
+}
+
 function updateExerciseRecords(exerciseId, weight, reps) {
   const exercise = getExercise(exerciseId);
   if (!exercise) return;
@@ -87,9 +146,12 @@ function getLastPerformance(exerciseId, excludeWorkoutId = null) {
     if (workout.id === excludeWorkoutId) continue;
     const entry = workout.exercises.find((e) => e.exerciseId === exerciseId);
     if (entry) {
+      const normalized = normalizeWorkoutEntry(entry);
+      const best = getEntryBestSet(normalized);
       return {
-        weight: entry.weight,
-        reps: entry.reps,
+        sets: normalized.sets,
+        weight: best.weight,
+        reps: best.reps,
         date: workout.completedAt || workout.date
       };
     }
@@ -105,7 +167,13 @@ function completeWorkout(workoutId) {
   workout.completedAt = new Date().toISOString();
 
   for (const entry of workout.exercises) {
-    updateExerciseRecords(entry.exerciseId, entry.weight || 0, entry.reps || 0);
+    const normalized = normalizeWorkoutEntry(entry);
+    for (const set of normalized.sets) {
+      updateExerciseRecords(entry.exerciseId, set.weight || 0, set.reps || 0);
+    }
+    entry.sets = normalized.sets;
+    delete entry.weight;
+    delete entry.reps;
   }
 
   saveWorkout(workout);

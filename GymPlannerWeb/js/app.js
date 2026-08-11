@@ -160,6 +160,7 @@ function renderWorkoutDetail(workoutId) {
       ` : workout.exercises.map((entry, index) => {
         const exercise = getExercise(entry.exerciseId);
         if (!exercise) return '';
+        const normalized = normalizeWorkoutEntry(entry);
         const last = getLastPerformance(exercise.id, workoutId);
         return `
           <article class="card workout-exercise-card">
@@ -167,18 +168,38 @@ function renderWorkoutDetail(workoutId) {
               <h3>${escapeHtml(exercise.name)}</h3>
               <span class="badge">${exercise.bodyPart}</span>
             </div>
-            ${last ? `<p class="last-perf">↩ Minule: ${formatWeight(last.weight)} kg × ${last.reps}</p>` : ''}
-            <div class="input-row">
-              <label class="field compact">
-                <span>Váha (kg)</span>
-                <input type="number" min="0" step="0.5" inputmode="decimal"
-                  data-index="${index}" data-field="weight" value="${entry.weight || ''}" placeholder="0">
-              </label>
-              <label class="field compact">
-                <span>Opakování</span>
-                <input type="number" min="0" step="1" inputmode="numeric"
-                  data-index="${index}" data-field="reps" value="${entry.reps || ''}" placeholder="0">
-              </label>
+            ${last ? `<p class="last-perf">↩ Minule (nejlepší série): ${formatWeight(last.weight)} kg × ${last.reps}</p>` : ''}
+            <label class="field compact set-count-field">
+              <span>Počet sérií</span>
+              <input type="number" min="1" max="20" step="1" inputmode="numeric"
+                class="set-count-input" data-index="${index}" value="${normalized.sets.length}">
+            </label>
+            <div class="sets-list">
+              ${normalized.sets.map((set, setIndex) => {
+                const lastSet = last?.sets?.[setIndex];
+                return `
+                  <div class="set-row">
+                    <div class="set-label">
+                      <strong>Série ${setIndex + 1}</strong>
+                      ${lastSet ? `<span class="set-last">Minule: ${formatWeight(lastSet.weight)} kg × ${lastSet.reps}</span>` : ''}
+                    </div>
+                    <div class="input-row">
+                      <label class="field compact">
+                        <span>Váha (kg)</span>
+                        <input type="number" min="0" step="0.5" inputmode="decimal"
+                          data-index="${index}" data-set="${setIndex}" data-field="weight"
+                          value="${set.weight || ''}" placeholder="0">
+                      </label>
+                      <label class="field compact">
+                        <span>Opakování</span>
+                        <input type="number" min="0" step="1" inputmode="numeric"
+                          data-index="${index}" data-set="${setIndex}" data-field="reps"
+                          value="${set.reps || ''}" placeholder="0">
+                      </label>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
             </div>
             <button class="text-btn danger remove-exercise" data-index="${index}">Odebrat cvik</button>
           </article>
@@ -237,14 +258,22 @@ function renderArchiveDetail(workoutId) {
       ${workout.exercises.map((entry) => {
         const exercise = getExercise(entry.exerciseId);
         if (!exercise) return '';
+        const normalized = normalizeWorkoutEntry(entry);
         return `
           <article class="card">
             <div class="exercise-header">
               <div>
                 <h3>${escapeHtml(exercise.name)}</h3>
-                <p class="meta">${exercise.bodyPart}</p>
+                <p class="meta">${exercise.bodyPart} · ${normalized.sets.length} série</p>
               </div>
-              <strong class="result">${formatWeight(entry.weight || 0)} kg × ${entry.reps || 0}</strong>
+            </div>
+            <div class="archive-sets">
+              ${normalized.sets.map((set, i) => `
+                <div class="archive-set-row">
+                  <span class="archive-set-label">Série ${i + 1}</span>
+                  <strong class="result">${formatWeight(set.weight || 0)} kg × ${set.reps || 0}</strong>
+                </div>
+              `).join('')}
             </div>
           </article>
         `;
@@ -298,14 +327,28 @@ function bindWorkoutDetailEvents(workoutId) {
     showAddExerciseToWorkout(workoutId);
   });
 
-  document.querySelectorAll('[data-field]').forEach((input) => {
+  document.querySelectorAll('.set-count-input').forEach((input) => {
     input.addEventListener('change', () => {
       const workout = getWorkout(workoutId);
       const index = Number(input.dataset.index);
+      const count = parseInt(input.value, 10) || 1;
+      workout.exercises[index] = ensureSetCount(workout.exercises[index], count);
+      saveWorkout(workout);
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-field][data-set]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const workout = getWorkout(workoutId);
+      const index = Number(input.dataset.index);
+      const setIndex = Number(input.dataset.set);
       const field = input.dataset.field;
-      workout.exercises[index][field] = field === 'weight'
+      const entry = normalizeWorkoutEntry(workout.exercises[index]);
+      entry.sets[setIndex][field] = field === 'weight'
         ? parseFloat(input.value) || 0
         : parseInt(input.value, 10) || 0;
+      workout.exercises[index] = entry;
       saveWorkout(workout);
     });
   });
@@ -506,11 +549,7 @@ function bindPickerEvents(workoutId) {
   document.querySelectorAll('.picker-item').forEach((btn) => {
     btn.addEventListener('click', () => {
       const workout = getWorkout(workoutId);
-      workout.exercises.push({
-        exerciseId: btn.dataset.id,
-        weight: 0,
-        reps: 0
-      });
+      workout.exercises.push(createWorkoutEntry(btn.dataset.id, 3));
       saveWorkout(workout);
       hideModal();
       render();
