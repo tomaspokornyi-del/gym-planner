@@ -7,8 +7,8 @@ Nativní Swift verze ve složce `GymPlanner/` vyžaduje Mac. Pokud máte jen iPh
 ## Funkce (stejné jako nativní app)
 
 - **Knihovna cviků** — vytváření cviků podle partie (Záda, Prsa, Ruce, Ramena, Nohy, Břicho)
-- **Trénink** — sestavení tréninku s datem, váhou a opakováními
-- **Minulý výkon** — u každého cviku vidíte, co jste cvičili naposledy
+- **Trénink** — sestavení tréninku s datem, **počtem sérií** a u každé série váhou a opakováními
+- **Minulý výkon** — u každé série vidíte, co jste cvičili naposledy
 - **Archiv** — dokončené tréninky se přesunou sem
 - **Rekordy** — u každého cviku se drží nejvyšší váha a nejvíce opakování
 

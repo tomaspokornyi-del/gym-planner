@@ -54,14 +54,14 @@ function migrateWorkout(workout) {
   if (!workout) return workout;
   let changed = false;
   workout.exercises = workout.exercises.map((entry) => {
-    const normalized = normalizeWorkoutEntry(entry);
-    if (entry !== normalized || entry.weight !== undefined || entry.reps !== undefined) {
-      changed = true;
-      delete normalized.weight;
-      delete normalized.reps;
-      return normalized;
+    if (entry.sets && Array.isArray(entry.sets) && entry.sets.length > 0 && entry.weight === undefined) {
+      return entry;
     }
-    return entry;
+    changed = true;
+    const normalized = normalizeWorkoutEntry(entry);
+    delete normalized.weight;
+    delete normalized.reps;
+    return normalized;
   });
   if (changed) saveWorkout(workout);
   return workout;
