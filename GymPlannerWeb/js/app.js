@@ -18,7 +18,9 @@ function init() {
   });
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=3').then((reg) => {
+      reg.update();
+    }).catch(() => {});
   }
 
   render();
@@ -126,6 +128,7 @@ function renderWorkoutList() {
           <h3>${formatDate(w.date)}</h3>
           <p class="meta">${w.exercises.length} cviků</p>
         </div>
+        <button class="icon-btn delete-workout" data-id="${w.id}" aria-label="Smazat trénink">🗑️</button>
         <span class="chevron">›</span>
       </article>
     `).join('')}
@@ -169,11 +172,13 @@ function renderWorkoutDetail(workoutId) {
               <span class="badge">${exercise.bodyPart}</span>
             </div>
             ${last ? `<p class="last-perf">↩ Minule (nejlepší série): ${formatWeight(last.weight)} kg × ${last.reps}</p>` : ''}
-            <label class="field compact set-count-field">
-              <span>Počet sérií</span>
-              <input type="number" min="1" max="20" step="1" inputmode="numeric"
-                class="set-count-input" data-index="${index}" value="${normalized.sets.length}">
-            </label>
+            <div class="set-count-row">
+              <label class="field set-count-field">
+                <span>Počet sérií</span>
+                <input type="number" min="1" max="20" step="1" inputmode="numeric"
+                  class="set-count-input" data-index="${index}" value="${normalized.sets.length}">
+              </label>
+            </div>
             <div class="sets-list">
               ${normalized.sets.map((set, setIndex) => {
                 const lastSet = last?.sets?.[setIndex];
@@ -207,9 +212,12 @@ function renderWorkoutDetail(workoutId) {
       }).join('')}
     </section>
 
-    ${workout.exercises.length > 0 ? `
-      <button class="primary-btn" id="complete-workout-btn">✓ Dokončit trénink</button>
-    ` : ''}
+    <section class="section workout-actions">
+      ${workout.exercises.length > 0 ? `
+        <button class="primary-btn" id="complete-workout-btn">✓ Dokončit trénink</button>
+      ` : ''}
+      <button class="danger-btn" id="delete-workout-btn">Smazat trénink</button>
+    </section>
   `;
 }
 
@@ -301,12 +309,28 @@ function bindLibraryEvents() {
   });
 }
 
+function deleteWorkoutWithConfirm(workoutId, onDeleted) {
+  if (!confirm('Opravdu smazat tento trénink? Tuto akci nelze vrátit.')) return;
+  deleteWorkout(workoutId);
+  onDeleted();
+}
+
 function bindWorkoutListEvents() {
   document.getElementById('add-workout-btn')?.addEventListener('click', showNewWorkoutForm);
   document.querySelectorAll('.workout-card').forEach((card) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.delete-workout')) return;
       currentWorkoutId = card.dataset.id;
       render();
+    });
+  });
+  document.querySelectorAll('.delete-workout').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteWorkoutWithConfirm(btn.dataset.id, () => {
+        if (currentWorkoutId === btn.dataset.id) currentWorkoutId = null;
+        render();
+      });
     });
   });
 }
@@ -368,6 +392,13 @@ function bindWorkoutDetailEvents(workoutId) {
       currentWorkoutId = null;
       switchTab('archive');
     }
+  });
+
+  document.getElementById('delete-workout-btn')?.addEventListener('click', () => {
+    deleteWorkoutWithConfirm(workoutId, () => {
+      currentWorkoutId = null;
+      render();
+    });
   });
 }
 
