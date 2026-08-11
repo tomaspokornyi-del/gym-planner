@@ -14,12 +14,23 @@ Nativní Swift verze ve složce `GymPlanner/` vyžaduje Mac. Pokud máte jen iPh
 
 ## Jak nainstalovat na iPhone / iPad
 
-### Varianta A — online hosting (doporučeno)
+### Varianta A — GitHub Pages (doporučeno)
 
-1. Nahrajte složku `GymPlannerWeb` na **GitHub Pages**, **Netlify** nebo **Vercel** (zdarma).
+Po nahrání repozitáře na GitHub se aplikace automaticky nasadí na:
+
+`https://VASE-USERNAME.github.io/gym-planner/`
+
+1. V **Safari** na iPhonu/iPadu otevřete tuto adresu
+2. Klepněte **Sdílet** → **Přidat na plochu**
+3. Aplikace běží na celou obrazovku jako nativní app
+
+> V nastavení repozitáře → **Pages** → Source: **GitHub Actions** (workflow je v repozitáři).
+
+### Varianta B — jiný hosting
+
+1. Nahrajte složku `GymPlannerWeb` na **Netlify** nebo **Vercel** (zdarma).
 2. Na iPhonu/iPadu otevřete URL v **Safari**.
-3. Klepněte na **Sdílet** (čtverec se šipkou) → **Přidat na plochu**.
-4. Aplikace se objeví jako ikona na ploše a běží na celou obrazovku.
+3. Klepněte na **Sdílet** → **Přidat na plochu**.
 
 ### Varianta B — lokální síť (pro rychlé vyzkoušení)
 

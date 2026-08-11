@@ -1,6 +1,8 @@
-# GymPlanner
+# GymPlanner (nativní iOS)
 
-iOS aplikace pro jednoduchou tvorbu posilovacích tréninků.
+> **Nemáte Mac?** Použijte webovou verzi ve složce [`../GymPlannerWeb/`](../GymPlannerWeb/) — funguje na iPhonu i iPadu bez Macu (Safari → Přidat na plochu).
+
+iOS aplikace pro jednoduchou tvorbu posilovacích tréninků. Vyžaduje **Mac s Xcode**.
 
 ## Funkce
 

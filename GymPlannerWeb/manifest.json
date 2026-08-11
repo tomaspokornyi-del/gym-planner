@@ -2,7 +2,7 @@
   "name": "GymPlanner",
   "short_name": "GymPlanner",
   "description": "Plánovač posilovacích tréninků",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f1117",
   "theme_color": "#3a72fb",
